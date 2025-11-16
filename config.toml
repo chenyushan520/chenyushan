@@ -1,0 +1,76 @@
+[app]
+project_version = "0.7.4"
+llm_vision_timeout = 120
+llm_text_timeout = 180
+llm_max_retries = 3
+vision_llm_provider = "litellm"
+vision_litellm_model_name = "gemini/gemini-2.0-flash-lite"
+vision_litellm_api_key = "sk-Y0yktYQLL1fTn1CIvju3Ema8eKe3ITpmqcKb3s7KKUaBz7HH"
+vision_litellm_base_url = "https://api.302.ai"
+text_llm_provider = "litellm"
+text_litellm_model_name = "deepseek/deepseek-chat"
+text_litellm_api_key = "sk-Y0yktYQLL1fTn1CIvju3Ema8eKe3ITpmqcKb3s7KKUaBz7HH"
+text_litellm_base_url = "https://api.302.ai"
+hide_config = true
+narration_language = "zh"
+target_duration_minutes = 1.0
+original_audio_ratio_percent = 15
+original_audio_ratio = 0.15
+narration_style_text = ""
+narration_structure_mode = "vlog"
+narration_source_mode = "subtitle"
+script_mode = "asr"
+
+[azure]
+speech_key = ""
+speech_region = ""
+
+[tencent]
+secret_id = ""
+secret_key = ""
+region = "ap-beijing"
+
+[soulvoice]
+api_key = ""
+voice_uri = "speech:mcg3fdnx:clzkyf4vy00e5qr6hywum4u84:bzznlkuhcjzpbosexitr"
+api_url = "https://tts.scsmtech.cn/tts"
+model = "FunAudioLLM/CosyVoice2-0.5B"
+
+[tts_qwen]
+api_key = ""
+model_name = "qwen3-tts-flash"
+
+[ui]
+tts_engine = "edge_tts"
+edge_voice_name = "zh-CN-XiaoyiNeural-Female"
+edge_volume = 80
+edge_rate = 1.0
+edge_pitch = 0
+azure_voice_name = "zh-CN-XiaoyiNeural-Female"
+azure_volume = 80
+azure_rate = 1.0
+azure_pitch = 0
+language = "zh"
+voice_name = "zh-CN-XiaoyiNeural-Female"
+font_name = "MicrosoftYaHeiBold.ttc"
+text_fore_color = "#FFFFFF"
+font_size = 60
+qwen_voice_type = "Cherry"
+qwen3_rate = 1.0
+fish_voice_id = "780716873dd0423a8568d82aeb17aa7c"
+fish_rate = 1.2
+tencent_voice_type = "101001"
+tencent_rate = 1.0
+
+[proxy]
+http = ""
+https = ""
+enabled = false
+
+[frames]
+frame_interval_input = 3
+vision_batch_size = 10
+
+[whisper]
+model_dir = "F:\\测试\\NarratoAI_v0.7\\NarratoAI\\models\\medium"
+enabled = true

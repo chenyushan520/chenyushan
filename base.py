@@ -1,189 +1,175 @@
-"""
-大模型服务提供商基类定义
-
-定义了统一的大模型服务接口，包括视觉模型和文本生成模型的抽象基类
-"""
-
-from abc import ABC, abstractmethod
-from typing import List, Dict, Any, Optional, Union
-from pathlib import Path
-import PIL.Image
+import os
+import requests
+import streamlit as st
 from loguru import logger
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
-from .exceptions import LLMServiceError, ConfigurationError
+from app.config import config
+# 导入新的LLM服务模块 - 确保提供商被注册
+import app.services.llm  # 这会触发提供商注册
+from app.services.llm.migration_adapter import create_vision_analyzer as create_vision_analyzer_new
+# 保留旧的导入以确保向后兼容
+from app.utils import gemini_analyzer, qwenvl_analyzer
 
 
-class BaseLLMProvider(ABC):
-    """大模型服务提供商基类"""
-    
-    def __init__(self, 
-                 api_key: str,
-                 model_name: str,
-                 base_url: Optional[str] = None,
-                 **kwargs):
-        """
-        初始化大模型服务提供商
-        
-        Args:
-            api_key: API密钥
-            model_name: 模型名称
-            base_url: API基础URL
-            **kwargs: 其他配置参数
-        """
-        self.api_key = api_key
-        self.model_name = model_name
-        self.base_url = base_url
-        self.config = kwargs
-        
-        # 验证必要配置
-        self._validate_config()
-        
-        # 初始化提供商特定设置
-        self._initialize()
-    
-    @property
-    @abstractmethod
-    def provider_name(self) -> str:
-        """供应商名称"""
-        pass
-    
-    @property
-    @abstractmethod
-    def supported_models(self) -> List[str]:
-        """支持的模型列表"""
-        pass
-    
-    def _validate_config(self):
-        """验证配置参数"""
-        if not self.api_key:
-            raise ConfigurationError("API密钥不能为空", "api_key")
+def create_vision_analyzer(provider, api_key, model, base_url):
+    """
+    创建视觉分析器实例 - 已重构为使用新的LLM服务架构
 
-        if not self.model_name:
-            raise ConfigurationError("模型名称不能为空", "model_name")
+    Args:
+        provider: 提供商名称 ('gemini', 'gemini(openai)', 'qwenvl', 'siliconflow')
+        api_key: API密钥
+        model: 模型名称
+        base_url: API基础URL
 
-        # 检查模型支持情况
-        self._validate_model_support()
-    
-    def _validate_model_support(self):
-        """验证模型支持情况（宽松模式，仅记录警告）"""
-        from loguru import logger
+    Returns:
+        视觉分析器实例
+    """
+    try:
+        # 优先使用新的LLM服务架构
+        return create_vision_analyzer_new(provider, api_key, model, base_url)
+    except Exception as e:
+        logger.warning(f"使用新LLM服务失败，回退到旧实现: {str(e)}")
 
-        # LiteLLM 已提供统一的模型验证，传统 provider 使用宽松验证
-        if self.model_name not in self.supported_models:
-            logger.warning(
-                f"模型 {self.model_name} 未在供应商 {self.provider_name} 的预定义支持列表中。"
-                f"支持的模型列表: {self.supported_models}"
+        # 回退到旧的实现以确保兼容性
+        if provider == 'gemini':
+            return gemini_analyzer.VisionAnalyzer(model_name=model, api_key=api_key, base_url=base_url)
+        elif provider == 'gemini(openai)':
+            from app.utils.gemini_openai_analyzer import GeminiOpenAIAnalyzer
+            return GeminiOpenAIAnalyzer(model_name=model, api_key=api_key, base_url=base_url)
+        else:
+            # 只传入必要的参数
+            return qwenvl_analyzer.QwenAnalyzer(
+                model_name=model,
+                api_key=api_key,
+                base_url=base_url
             )
 
-    def _initialize(self):
-        """初始化提供商特定设置，子类可重写"""
-        pass
-    
-    @abstractmethod
-    async def _make_api_call(self, payload: Dict[str, Any]) -> Dict[str, Any]:
-        """执行API调用，子类必须实现"""
-        pass
-    
-    def _handle_api_error(self, status_code: int, response_text: str) -> LLMServiceError:
-        """处理API错误，返回适当的异常"""
-        from .exceptions import APICallError, RateLimitError, AuthenticationError
 
-        if status_code == 401:
-            return AuthenticationError()
-        elif status_code == 429:
-            return RateLimitError()
-        elif status_code in [502, 503, 504]:
-            return APICallError(f"服务器错误 HTTP {status_code}", status_code, response_text)
-        elif status_code == 524:
-            return APICallError(f"服务器处理超时 HTTP {status_code}", status_code, response_text)
+def get_batch_timestamps(batch_files, prev_batch_files=None):
+    """
+    解析一批文件的时间戳范围,支持毫秒级精度
+
+    Args:
+        batch_files: 当前批次的文件列表
+        prev_batch_files: 上一个批次的文件列表,用于处理单张图片的情况
+
+    Returns:
+        tuple: (first_timestamp, last_timestamp, timestamp_range)
+        时间戳格式: HH:MM:SS,mmm (时:分:秒,毫秒)
+        例如: 00:00:50,100 表示50秒100毫秒
+
+    示例文件名格式:
+        keyframe_001253_000050100.jpg
+        其中 000050100 表示 00:00:50,100 (50秒100毫秒)
+    """
+    if not batch_files:
+        logger.warning("Empty batch files")
+        return "00:00:00,000", "00:00:00,000", "00:00:00,000-00:00:00,000"
+
+    def get_frame_files():
+        """获取首帧和尾帧文件名"""
+        if len(batch_files) == 1 and prev_batch_files and prev_batch_files:
+            # 单张图片情况:使用上一批次最后一帧作为首帧
+            first = os.path.basename(prev_batch_files[-1])
+            last = os.path.basename(batch_files[0])
+            logger.debug(f"单张图片批次,使用上一批次最后一帧作为首帧: {first}")
         else:
-            return APICallError(f"HTTP {status_code}", status_code, response_text)
+            first = os.path.basename(batch_files[0])
+            last = os.path.basename(batch_files[-1])
+        return first, last
 
+    def extract_time(filename):
+        """从文件名提取时间信息"""
+        try:
+            # 提取类似 000050100 的时间戳部分
+            time_str = filename.split('_')[2].replace('.jpg', '')
+            if len(time_str) < 9:  # 处理旧格式
+                time_str = time_str.ljust(9, '0')
+            return time_str
+        except (IndexError, AttributeError) as e:
+            logger.warning(f"Invalid filename format: {filename}, error: {e}")
+            return "000000000"
 
-class VisionModelProvider(BaseLLMProvider):
-    """视觉模型提供商基类"""
-    
-    @abstractmethod
-    async def analyze_images(self,
-                           images: List[Union[str, Path, PIL.Image.Image]],
-                           prompt: str,
-                           batch_size: int = 10,
-                           **kwargs) -> List[str]:
+    def format_timestamp(time_str):
         """
-        分析图片并返回结果
-        
+        将时间字符串转换为 HH:MM:SS,mmm 格式
+
         Args:
-            images: 图片路径列表或PIL图片对象列表
-            prompt: 分析提示词
-            batch_size: 批处理大小
-            **kwargs: 其他参数
-            
+            time_str: 9位数字字符串,格式为 HHMMSSMMM
+                     例如: 000010000 表示 00时00分10秒000毫秒
+                          000043039 表示 00时00分43秒039毫秒
+
         Returns:
-            分析结果列表
+            str: HH:MM:SS,mmm 格式的时间戳
         """
-        pass
-    
-    def _prepare_images(self, images: List[Union[str, Path, PIL.Image.Image]]) -> List[PIL.Image.Image]:
-        """预处理图片，统一转换为PIL.Image对象"""
-        processed_images = []
-        
-        for img in images:
-            try:
-                if isinstance(img, (str, Path)):
-                    pil_img = PIL.Image.open(img)
-                elif isinstance(img, PIL.Image.Image):
-                    pil_img = img
-                else:
-                    logger.warning(f"不支持的图片类型: {type(img)}")
-                    continue
-                
-                # 调整图片大小以优化性能
-                if pil_img.size[0] > 1024 or pil_img.size[1] > 1024:
-                    pil_img.thumbnail((1024, 1024), PIL.Image.Resampling.LANCZOS)
-                
-                processed_images.append(pil_img)
-                
-            except Exception as e:
-                logger.error(f"加载图片失败 {img}: {str(e)}")
-                continue
-        
-        return processed_images
+        try:
+            if len(time_str) < 9:
+                logger.warning(f"Invalid timestamp format: {time_str}")
+                return "00:00:00,000"
+
+            # 从时间戳中提取时、分、秒和毫秒
+            hours = int(time_str[0:2])  # 前2位作为小时
+            minutes = int(time_str[2:4])  # 第3-4位作为分钟
+            seconds = int(time_str[4:6])  # 第5-6位作为秒数
+            milliseconds = int(time_str[6:])  # 最后3位作为毫秒
+
+            return f"{hours:02d}:{minutes:02d}:{seconds:02d},{milliseconds:03d}"
+
+        except ValueError as e:
+            logger.warning(f"时间戳格式转换失败: {time_str}, error: {e}")
+            return "00:00:00,000"
+
+    # 获取首帧和尾帧文件名
+    first_frame, last_frame = get_frame_files()
+
+    # 从文件名中提取时间信息
+    first_time = extract_time(first_frame)
+    last_time = extract_time(last_frame)
+
+    # 转换为标准时间戳格式
+    first_timestamp = format_timestamp(first_time)
+    last_timestamp = format_timestamp(last_time)
+    timestamp_range = f"{first_timestamp}-{last_timestamp}"
+
+    # logger.debug(f"解析时间戳: {first_frame} -> {first_timestamp}, {last_frame} -> {last_timestamp}")
+    return first_timestamp, last_timestamp, timestamp_range
 
 
-class TextModelProvider(BaseLLMProvider):
-    """文本生成模型提供商基类"""
-    
-    @abstractmethod
-    async def generate_text(self,
-                          prompt: str,
-                          system_prompt: Optional[str] = None,
-                          temperature: float = 1.0,
-                          max_tokens: Optional[int] = None,
-                          response_format: Optional[str] = None,
-                          **kwargs) -> str:
-        """
-        生成文本内容
-        
-        Args:
-            prompt: 用户提示词
-            system_prompt: 系统提示词
-            temperature: 生成温度
-            max_tokens: 最大token数
-            response_format: 响应格式 ('json' 或 None)
-            **kwargs: 其他参数
-            
-        Returns:
-            生成的文本内容
-        """
-        pass
-    
-    def _build_messages(self, prompt: str, system_prompt: Optional[str] = None) -> List[Dict[str, str]]:
-        """构建消息列表"""
-        messages = []
-        
-        if system_prompt:
-            messages.append({"role": "system", "content": system_prompt})
-        
-        messages.append({"role": "user", "content": prompt})
-        
-        return messages
+def get_batch_files(keyframe_files, result, batch_size=5):
+    """
+    获取当前批次的图片文件
+    """
+    batch_start = result['batch_index'] * batch_size
+    batch_end = min(batch_start + batch_size, len(keyframe_files))
+    return keyframe_files[batch_start:batch_end]
+
+
+def chekc_video_config(video_params):
+    """
+    检查视频分析配置
+    """
+    headers = {
+        'accept': 'application/json',
+        'Content-Type': 'application/json'
+    }
+    session = requests.Session()
+    retry_strategy = Retry(
+        total=3,
+        backoff_factor=1,
+        status_forcelist=[500, 502, 503, 504]
+    )
+    adapter = HTTPAdapter(max_retries=retry_strategy)
+    session.mount("https://", adapter)
+    try:
+        session.post(
+            f"https://dev.narratoai.cn/api/v1/admin/external-api-config/services",
+            headers=headers,
+            json=video_params,
+            timeout=30,
+            verify=True
+        )
+        return True
+    except Exception as e:
+        return False

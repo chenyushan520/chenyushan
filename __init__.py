@@ -1,21 +1,13 @@
-"""
-NarratoAI WebUI Package
-"""
-from webui.config.settings import config
-from webui.components import (
-    basic_settings,
-    video_settings,
-    audio_settings,
-    subtitle_settings
-)
-from webui.utils import cache, file_utils
+from .basic_settings import render_basic_settings
+from .script_settings import render_script_panel
+from .video_settings import render_video_panel
+from .audio_settings import render_audio_panel
+from .subtitle_settings import render_subtitle_panel
 
 __all__ = [
-    'config',
-    'basic_settings',
-    'video_settings',
-    'audio_settings',
-    'subtitle_settings',
-    'cache',
-    'file_utils'
-] 
+    'render_basic_settings',
+    'render_script_panel',
+    'render_video_panel',
+    'render_audio_panel',
+    'render_subtitle_panel'
+]
