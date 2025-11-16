@@ -1,0 +1,294 @@
+{
+  "frame_observations": [
+    {
+      "frame_number": 1,
+      "observation": "一个男人穿过森林，背景是茂密的植被。",
+      "frame_path": "E:\\NarratoAI_039\\NarratoAI_v0.6\\NarratoAI\\storage\\temp\\keyframes\\55c273040bce0be71a977a9fe8ae2aaa\\keyframe_000000_000000000.jpg",
+      "timestamp": "00:00:00,000",
+      "timestamp_seconds": 0.0,
+      "batch_index": 0,
+      "original_frame_number": 1
+    },
+    {
+      "frame_number": 2,
+      "observation": "一个留着胡子的男人站在森林里，背着背包。",
+      "frame_path": "E:\\NarratoAI_039\\NarratoAI_v0.6\\NarratoAI\\storage\\temp\\keyframes\\55c273040bce0be71a977a9fe8ae2aaa\\keyframe_000075_000003000.jpg",
+      "timestamp": "00:00:03,000",
+      "timestamp_seconds": 3.0,
+      "batch_index": 0,
+      "original_frame_number": 2
+    },
+    {
+      "frame_number": 3,
+      "observation": "男人背对着镜头，在森林中行走，准备爬上陡峭的土坡。",
+      "frame_path": "E:\\NarratoAI_039\\NarratoAI_v0.6\\NarratoAI\\storage\\temp\\keyframes\\55c273040bce0be71a977a9fe8ae2aaa\\keyframe_000150_000006000.jpg",
+      "timestamp": "00:00:06,000",
+      "timestamp_seconds": 6.0,
+      "batch_index": 0,
+      "original_frame_number": 3
+    },
+    {
+      "frame_number": 4,
+      "observation": "男人背对着镜头，站在土坡边，似乎在观察周围环境。",
+      "frame_path": "E:\\NarratoAI_039\\NarratoAI_v0.6\\NarratoAI\\storage\\temp\\keyframes\\55c273040bce0be71a977a9fe8ae2aaa\\keyframe_000225_000009000.jpg",
+      "timestamp": "00:00:09,000",
+      "timestamp_seconds": 9.0,
+      "batch_index": 0,
+      "original_frame_number": 4
+    },
+    {
+      "frame_number": 5,
+      "observation": "男人朝土坡走去，看起来是在准备开始挖掘。",
+      "frame_path": "E:\\NarratoAI_039\\NarratoAI_v0.6\\NarratoAI\\storage\\temp\\keyframes\\55c273040bce0be71a977a9fe8ae2aaa\\keyframe_000300_000012000.jpg",
+      "timestamp": "00:00:12,000",
+      "timestamp_seconds": 12.0,
+      "batch_index": 0,
+      "original_frame_number": 5
+    },
+    {
+      "frame_number": 6,
+      "observation": "男人正在从背包里取东西，背包放在地上，旁边有树枝和泥土。",
+      "frame_path": "E:\\NarratoAI_039\\NarratoAI_v0.6\\NarratoAI\\storage\\temp\\keyframes\\55c273040bce0be71a977a9fe8ae2aaa\\keyframe_000375_000015000.jpg",
+      "timestamp": "00:00:15,000",
+      "timestamp_seconds": 15.0,
+      "batch_index": 0,
+      "original_frame_number": 6
+    },
+    {
+      "frame_number": 7,
+      "observation": "男人正在从背包里拿东西。",
+      "frame_path": "E:\\NarratoAI_039\\NarratoAI_v0.6\\NarratoAI\\storage\\temp\\keyframes\\55c273040bce0be71a977a9fe8ae2aaa\\keyframe_000450_000018000.jpg",
+      "timestamp": "00:00:18,000",
+      "timestamp_seconds": 18.0,
+      "batch_index": 0,
+      "original_frame_number": 7
+    },
+    {
+      "frame_number": 8,
+      "observation": "男人从背包里拿出铲子和其他工具。",
+      "frame_path": "E:\\NarratoAI_039\\NarratoAI_v0.6\\NarratoAI\\storage\\temp\\keyframes\\55c273040bce0be71a977a9fe8ae2aaa\\keyframe_000525_000021000.jpg",
+      "timestamp": "00:00:21,000",
+      "timestamp_seconds": 21.0,
+      "batch_index": 0,
+      "original_frame_number": 8
+    },
+    {
+      "frame_number": 9,
+      "observation": "男人拿着铲子，开始挖掘。",
+      "frame_path": "E:\\NarratoAI_039\\NarratoAI_v0.6\\NarratoAI\\storage\\temp\\keyframes\\55c273040bce0be71a977a9fe8ae2aaa\\keyframe_000600_000024000.jpg",
+      "timestamp": "00:00:24,000",
+      "timestamp_seconds": 24.0,
+      "batch_index": 0,
+      "original_frame_number": 9
+    },
+    {
+      "frame_number": 10,
+      "observation": "男人已经开始挖掘，铲子和背包放在泥土上。",
+      "frame_path": "E:\\NarratoAI_039\\NarratoAI_v0.6\\NarratoAI\\storage\\temp\\keyframes\\55c273040bce0be71a977a9fe8ae2aaa\\keyframe_000675_000027000.jpg",
+      "timestamp": "00:00:27,000",
+      "timestamp_seconds": 27.0,
+      "batch_index": 0,
+      "original_frame_number": 10
+    },
+    {
+      "frame_number": 11,
+      "observation": "一个男人正在茂密的树林里清理泥土，准备挖坑，他的旁边有一把铲子和背包。",
+      "frame_path": "E:\\NarratoAI_039\\NarratoAI_v0.6\\NarratoAI\\storage\\temp\\keyframes\\55c273040bce0be71a977a9fe8ae2aaa\\keyframe_000750_000030000.jpg",
+      "timestamp": "00:00:30,000",
+      "timestamp_seconds": 30.0,
+      "batch_index": 1,
+      "original_frame_number": 1
+    },
+    {
+      "frame_number": 12,
+      "observation": "男人继续用手挖掘泥土，把土往外抛。",
+      "frame_path": "E:\\NarratoAI_039\\NarratoAI_v0.6\\NarratoAI\\storage\\temp\\keyframes\\55c273040bce0be71a977a9fe8ae2aaa\\keyframe_000825_000033000.jpg",
+      "timestamp": "00:00:33,000",
+      "timestamp_seconds": 33.0,
+      "batch_index": 1,
+      "original_frame_number": 2
+    },
+    {
+      "frame_number": 13,
+      "observation": "男人还在用手清理泥土。",
+      "frame_path": "E:\\NarratoAI_039\\NarratoAI_v0.6\\NarratoAI\\storage\\temp\\keyframes\\55c273040bce0be71a977a9fe8ae2aaa\\keyframe_000900_000036000.jpg",
+      "timestamp": "00:00:36,000",
+      "timestamp_seconds": 36.0,
+      "batch_index": 1,
+      "original_frame_number": 3
+    },
+    {
+      "frame_number": 14,
+      "observation": "特写镜头，显示一只靴子正在踩在泥土上。",
+      "frame_path": "E:\\NarratoAI_039\\NarratoAI_v0.6\\NarratoAI\\storage\\temp\\keyframes\\55c273040bce0be71a977a9fe8ae2aaa\\keyframe_000975_000039000.jpg",
+      "timestamp": "00:00:39,000",
+      "timestamp_seconds": 39.0,
+      "batch_index": 1,
+      "original_frame_number": 4
+    },
+    {
+      "frame_number": 15,
+      "observation": "男人用镐子挖掘泥土。",
+      "frame_path": "E:\\NarratoAI_039\\NarratoAI_v0.6\\NarratoAI\\storage\\temp\\keyframes\\55c273040bce0be71a977a9fe8ae2aaa\\keyframe_001050_000042000.jpg",
+      "timestamp": "00:00:42,000",
+      "timestamp_seconds": 42.0,
+      "batch_index": 1,
+      "original_frame_number": 5
+    },
+    {
+      "frame_number": 16,
+      "observation": "地面上的泥土和落叶，阳光洒在上面。",
+      "frame_path": "E:\\NarratoAI_039\\NarratoAI_v0.6\\NarratoAI\\storage\\temp\\keyframes\\55c273040bce0be71a977a9fe8ae2aaa\\keyframe_001125_000045000.jpg",
+      "timestamp": "00:00:45,000",
+      "timestamp_seconds": 45.0,
+      "batch_index": 1,
+      "original_frame_number": 6
+    },
+    {
+      "frame_number": 17,
+      "observation": "男人继续挖掘泥土，旁边的背包和树根清晰可见。",
+      "frame_path": "E:\\NarratoAI_039\\NarratoAI_v0.6\\NarratoAI\\storage\\temp\\keyframes\\55c273040bce0be71a977a9fe8ae2aaa\\keyframe_001200_000048000.jpg",
+      "timestamp": "00:00:48,000",
+      "timestamp_seconds": 48.0,
+      "batch_index": 1,
+      "original_frame_number": 7
+    },
+    {
+      "frame_number": 18,
+      "observation": "镜头切换到挖掘泥土的场景。",
+      "frame_path": "E:\\NarratoAI_039\\NarratoAI_v0.6\\NarratoAI\\storage\\temp\\keyframes\\55c273040bce0be71a977a9fe8ae2aaa\\keyframe_001275_000051000.jpg",
+      "timestamp": "00:00:51,000",
+      "timestamp_seconds": 51.0,
+      "batch_index": 1,
+      "original_frame_number": 8
+    },
+    {
+      "frame_number": 19,
+      "observation": "男人正在用铲子整理挖好的泥土。",
+      "frame_path": "E:\\NarratoAI_039\\NarratoAI_v0.6\\NarratoAI\\storage\\temp\\keyframes\\55c273040bce0be71a977a9fe8ae2aaa\\keyframe_001350_000054000.jpg",
+      "timestamp": "00:00:54,000",
+      "timestamp_seconds": 54.0,
+      "batch_index": 1,
+      "original_frame_number": 9
+    },
+    {
+      "frame_number": 20,
+      "observation": "男人正在用工具测量挖好的坑的深度。",
+      "frame_path": "E:\\NarratoAI_039\\NarratoAI_v0.6\\NarratoAI\\storage\\temp\\keyframes\\55c273040bce0be71a977a9fe8ae2aaa\\keyframe_001425_000057000.jpg",
+      "timestamp": "00:00:57,000",
+      "timestamp_seconds": 57.0,
+      "batch_index": 1,
+      "original_frame_number": 10
+    },
+    {
+      "frame_number": 21,
+      "observation": "泥土的特写，显示了土壤的纹理和地貌。",
+      "frame_path": "E:\\NarratoAI_039\\NarratoAI_v0.6\\NarratoAI\\storage\\temp\\keyframes\\55c273040bce0be71a977a9fe8ae2aaa\\keyframe_001500_000100000.jpg",
+      "timestamp": "00:01:00,000",
+      "timestamp_seconds": 60.0,
+      "batch_index": 2,
+      "original_frame_number": 1
+    },
+    {
+      "frame_number": 22,
+      "observation": "泥土的特写，显示了土壤的纹理和地貌。",
+      "frame_path": "E:\\NarratoAI_039\\NarratoAI_v0.6\\NarratoAI\\storage\\temp\\keyframes\\55c273040bce0be71a977a9fe8ae2aaa\\keyframe_001575_000103000.jpg",
+      "timestamp": "00:01:03,000",
+      "timestamp_seconds": 63.0,
+      "batch_index": 2,
+      "original_frame_number": 2
+    },
+    {
+      "frame_number": 23,
+      "observation": "绿色植物的特写，看起来像树枝和叶子。",
+      "frame_path": "E:\\NarratoAI_039\\NarratoAI_v0.6\\NarratoAI\\storage\\temp\\keyframes\\55c273040bce0be71a977a9fe8ae2aaa\\keyframe_001650_000106000.jpg",
+      "timestamp": "00:01:06,000",
+      "timestamp_seconds": 66.0,
+      "batch_index": 2,
+      "original_frame_number": 3
+    },
+    {
+      "frame_number": 24,
+      "observation": "一个男人正在挖土，他身处一个土坡下，现场有挖好的土坑和工具，场景在树林里。",
+      "frame_path": "E:\\NarratoAI_039\\NarratoAI_v0.6\\NarratoAI\\storage\\temp\\keyframes\\55c273040bce0be71a977a9fe8ae2aaa\\keyframe_001725_000109000.jpg",
+      "timestamp": "00:01:09,000",
+      "timestamp_seconds": 69.0,
+      "batch_index": 2,
+      "original_frame_number": 4
+    },
+    {
+      "frame_number": 25,
+      "observation": "男人坐在土坡边，向侧面观看。",
+      "frame_path": "E:\\NarratoAI_039\\NarratoAI_v0.6\\NarratoAI\\storage\\temp\\keyframes\\55c273040bce0be71a977a9fe8ae2aaa\\keyframe_001800_000112000.jpg",
+      "timestamp": "00:01:12,000",
+      "timestamp_seconds": 72.0,
+      "batch_index": 2,
+      "original_frame_number": 5
+    },
+    {
+      "frame_number": 26,
+      "observation": "男人坐在土坡边，向侧面观看。",
+      "frame_path": "E:\\NarratoAI_039\\NarratoAI_v0.6\\NarratoAI\\storage\\temp\\keyframes\\55c273040bce0be71a977a9fe8ae2aaa\\keyframe_001875_000115000.jpg",
+      "timestamp": "00:01:15,000",
+      "timestamp_seconds": 75.0,
+      "batch_index": 2,
+      "original_frame_number": 6
+    },
+    {
+      "frame_number": 27,
+      "observation": "男人坐在土坡边，向侧面观看。",
+      "frame_path": "E:\\NarratoAI_039\\NarratoAI_v0.6\\NarratoAI\\storage\\temp\\keyframes\\55c273040bce0be71a977a9fe8ae2aaa\\keyframe_001950_000118000.jpg",
+      "timestamp": "00:01:18,000",
+      "timestamp_seconds": 78.0,
+      "batch_index": 2,
+      "original_frame_number": 7
+    },
+    {
+      "frame_number": 28,
+      "observation": "展现了挖好的台阶，场景在树林里。",
+      "frame_path": "E:\\NarratoAI_039\\NarratoAI_v0.6\\NarratoAI\\storage\\temp\\keyframes\\55c273040bce0be71a977a9fe8ae2aaa\\keyframe_002025_000121000.jpg",
+      "timestamp": "00:01:21,000",
+      "timestamp_seconds": 81.0,
+      "batch_index": 2,
+      "original_frame_number": 8
+    },
+    {
+      "frame_number": 29,
+      "observation": "一个男人正在砍柴，他坐在一个山沟里。",
+      "frame_path": "E:\\NarratoAI_039\\NarratoAI_v0.6\\NarratoAI\\storage\\temp\\keyframes\\55c273040bce0be71a977a9fe8ae2aaa\\keyframe_002100_000124000.jpg",
+      "timestamp": "00:01:24,000",
+      "timestamp_seconds": 84.0,
+      "batch_index": 2,
+      "original_frame_number": 9
+    },
+    {
+      "frame_number": 30,
+      "observation": "一个男人正在砍柴，他坐在一个山沟里。",
+      "frame_path": "E:\\NarratoAI_039\\NarratoAI_v0.6\\NarratoAI\\storage\\temp\\keyframes\\55c273040bce0be71a977a9fe8ae2aaa\\keyframe_002175_000127000.jpg",
+      "timestamp": "00:01:27,000",
+      "timestamp_seconds": 87.0,
+      "batch_index": 2,
+      "original_frame_number": 10
+    }
+  ],
+  "overall_activity_summaries": [
+    {
+      "batch_index": 0,
+      "time_range": "00:00:00,000-00:00:27,000",
+      "duration_seconds": 27.0,
+      "summary": "一个男人在森林里行走，从背包里取出工具，准备开始挖掘。"
+    },
+    {
+      "batch_index": 1,
+      "time_range": "00:00:30,000-00:00:57,000",
+      "duration_seconds": 27.0,
+      "summary": "一个男人正在树林中挖坑，准备工作。"
+    },
+    {
+      "batch_index": 2,
+      "time_range": "00:01:00,000-00:01:27,000",
+      "duration_seconds": 27.0,
+      "summary": "一个男人在户外挖土和砍柴，构建土坡台阶。"
+    }
+  ]
+}
