@@ -1,118 +1,79 @@
+#!/usr/bin/env python
+# -*- coding: UTF-8 -*-
+
 """
-大模型服务异常类定义
-
-定义了大模型服务中可能出现的各种异常类型，
-提供统一的错误处理机制
+@Project: NarratoAI
+@File   : exceptions.py
+@Author : viccy同学
+@Date   : 2025/1/7
+@Description: 提示词管理模块异常定义
 """
 
-from typing import Optional, Dict, Any
+
+class PromptError(Exception):
+    """提示词模块基础异常类"""
+    pass
 
 
-class LLMServiceError(Exception):
-    """大模型服务基础异常类"""
+class PromptNotFoundError(PromptError):
+    """提示词未找到异常"""
     
-    def __init__(self, message: str, error_code: Optional[str] = None, details: Optional[Dict[str, Any]] = None):
+    def __init__(self, category: str, name: str, version: str = None):
+        self.category = category
+        self.name = name
+        self.version = version
+        
+        if version:
+            message = f"提示词未找到: {category}.{name} (版本: {version})"
+        else:
+            message = f"提示词未找到: {category}.{name}"
+            
         super().__init__(message)
-        self.message = message
-        self.error_code = error_code
-        self.details = details or {}
+
+
+class PromptValidationError(PromptError):
+    """提示词验证异常"""
     
-    def __str__(self):
-        if self.error_code:
-            return f"[{self.error_code}] {self.message}"
-        return self.message
+    def __init__(self, message: str, validation_errors: list = None):
+        self.validation_errors = validation_errors or []
+        super().__init__(message)
 
 
-class ProviderNotFoundError(LLMServiceError):
-    """供应商未找到异常"""
+class TemplateRenderError(PromptError):
+    """模板渲染异常"""
     
-    def __init__(self, provider_name: str):
-        super().__init__(
-            message=f"未找到大模型供应商: {provider_name}",
-            error_code="PROVIDER_NOT_FOUND",
-            details={"provider_name": provider_name}
-        )
+    def __init__(self, template_name: str, error_message: str, missing_params: list = None):
+        self.template_name = template_name
+        self.error_message = error_message
+        self.missing_params = missing_params or []
+        
+        message = f"模板渲染失败 '{template_name}': {error_message}"
+        if missing_params:
+            message += f" (缺少参数: {', '.join(missing_params)})"
+            
+        super().__init__(message)
 
 
-class ConfigurationError(LLMServiceError):
-    """配置错误异常"""
+class PromptRegistrationError(PromptError):
+    """提示词注册异常"""
     
-    def __init__(self, message: str, config_key: Optional[str] = None):
-        super().__init__(
-            message=f"配置错误: {message}",
-            error_code="CONFIGURATION_ERROR",
-            details={"config_key": config_key} if config_key else {}
-        )
+    def __init__(self, category: str, name: str, reason: str):
+        self.category = category
+        self.name = name
+        self.reason = reason
+        
+        message = f"提示词注册失败 {category}.{name}: {reason}"
+        super().__init__(message)
 
 
-class APICallError(LLMServiceError):
-    """API调用错误异常"""
+class PromptVersionError(PromptError):
+    """提示词版本异常"""
     
-    def __init__(self, message: str, status_code: Optional[int] = None, response_text: Optional[str] = None):
-        super().__init__(
-            message=f"API调用失败: {message}",
-            error_code="API_CALL_ERROR",
-            details={
-                "status_code": status_code,
-                "response_text": response_text
-            }
-        )
-
-
-class ValidationError(LLMServiceError):
-    """输出验证错误异常"""
-    
-    def __init__(self, message: str, validation_type: Optional[str] = None, invalid_data: Optional[Any] = None):
-        super().__init__(
-            message=f"输出验证失败: {message}",
-            error_code="VALIDATION_ERROR",
-            details={
-                "validation_type": validation_type,
-                "invalid_data": str(invalid_data) if invalid_data else None
-            }
-        )
-
-
-class ModelNotSupportedError(LLMServiceError):
-    """模型不支持异常"""
-    
-    def __init__(self, model_name: str, provider_name: str):
-        super().__init__(
-            message=f"供应商 {provider_name} 不支持模型 {model_name}",
-            error_code="MODEL_NOT_SUPPORTED",
-            details={
-                "model_name": model_name,
-                "provider_name": provider_name
-            }
-        )
-
-
-class RateLimitError(LLMServiceError):
-    """API速率限制异常"""
-    
-    def __init__(self, message: str = "API调用频率超限", retry_after: Optional[int] = None):
-        super().__init__(
-            message=message,
-            error_code="RATE_LIMIT_ERROR",
-            details={"retry_after": retry_after}
-        )
-
-
-class AuthenticationError(LLMServiceError):
-    """认证错误异常"""
-    
-    def __init__(self, message: str = "API密钥无效或权限不足"):
-        super().__init__(
-            message=message,
-            error_code="AUTHENTICATION_ERROR"
-        )
-
-
-class ContentFilterError(LLMServiceError):
-    """内容过滤异常"""
-    
-    def __init__(self, message: str = "内容被安全过滤器阻止"):
-        super().__init__(
-            message=message,
-            error_code="CONTENT_FILTER_ERROR"
-        )
+    def __init__(self, category: str, name: str, version: str, reason: str):
+        self.category = category
+        self.name = name
+        self.version = version
+        self.reason = reason
+        
+        message = f"提示词版本错误 {category}.{name} v{version}: {reason}"
+        super().__init__(message)

@@ -1,175 +1,182 @@
-import os
-import requests
-import streamlit as st
-from loguru import logger
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
+#!/usr/bin/env python
+# -*- coding: UTF-8 -*-
 
-from app.config import config
-# 导入新的LLM服务模块 - 确保提供商被注册
-import app.services.llm  # 这会触发提供商注册
-from app.services.llm.migration_adapter import create_vision_analyzer as create_vision_analyzer_new
-# 保留旧的导入以确保向后兼容
-from app.utils import gemini_analyzer, qwenvl_analyzer
+"""
+@Project: NarratoAI
+@File   : base.py
+@Author : viccy同学
+@Date   : 2025/1/7
+@Description: 提示词基础类定义
+"""
+
+from abc import ABC, abstractmethod
+from typing import Dict, Any, Optional, List
+from enum import Enum
+from dataclasses import dataclass, field
+from datetime import datetime
 
 
-def create_vision_analyzer(provider, api_key, model, base_url):
-    """
-    创建视觉分析器实例 - 已重构为使用新的LLM服务架构
+class ModelType(Enum):
+    """模型类型枚举"""
+    TEXT = "text"           # 文本模型
+    VISION = "vision"       # 视觉模型
+    MULTIMODAL = "multimodal"  # 多模态模型
 
-    Args:
-        provider: 提供商名称 ('gemini', 'gemini(openai)', 'qwenvl', 'siliconflow')
-        api_key: API密钥
-        model: 模型名称
-        base_url: API基础URL
 
-    Returns:
-        视觉分析器实例
-    """
-    try:
-        # 优先使用新的LLM服务架构
-        return create_vision_analyzer_new(provider, api_key, model, base_url)
-    except Exception as e:
-        logger.warning(f"使用新LLM服务失败，回退到旧实现: {str(e)}")
+class OutputFormat(Enum):
+    """输出格式枚举"""
+    TEXT = "text"           # 纯文本
+    JSON = "json"           # JSON格式
+    MARKDOWN = "markdown"   # Markdown格式
+    STRUCTURED = "structured"  # 结构化数据
 
-        # 回退到旧的实现以确保兼容性
-        if provider == 'gemini':
-            return gemini_analyzer.VisionAnalyzer(model_name=model, api_key=api_key, base_url=base_url)
-        elif provider == 'gemini(openai)':
-            from app.utils.gemini_openai_analyzer import GeminiOpenAIAnalyzer
-            return GeminiOpenAIAnalyzer(model_name=model, api_key=api_key, base_url=base_url)
-        else:
-            # 只传入必要的参数
-            return qwenvl_analyzer.QwenAnalyzer(
-                model_name=model,
-                api_key=api_key,
-                base_url=base_url
+
+@dataclass
+class PromptMetadata:
+    """提示词元数据"""
+    name: str                           # 提示词名称
+    category: str                       # 分类
+    version: str                        # 版本
+    description: str                    # 描述
+    model_type: ModelType              # 适用的模型类型
+    output_format: OutputFormat        # 输出格式
+    author: str = "viccy同学"       # 作者
+    created_at: datetime = field(default_factory=datetime.now)  # 创建时间
+    updated_at: datetime = field(default_factory=datetime.now)  # 更新时间
+    tags: List[str] = field(default_factory=list)  # 标签
+    parameters: List[str] = field(default_factory=list)  # 支持的参数列表
+
+
+class BasePrompt(ABC):
+    """提示词基础类"""
+    
+    def __init__(self, metadata: PromptMetadata):
+        self.metadata = metadata
+        self._template = None
+        self._system_prompt = None
+        self._examples = []
+        
+    @property
+    def name(self) -> str:
+        """获取提示词名称"""
+        return self.metadata.name
+        
+    @property
+    def category(self) -> str:
+        """获取提示词分类"""
+        return self.metadata.category
+        
+    @property
+    def version(self) -> str:
+        """获取提示词版本"""
+        return self.metadata.version
+        
+    @property
+    def model_type(self) -> ModelType:
+        """获取适用的模型类型"""
+        return self.metadata.model_type
+        
+    @property
+    def output_format(self) -> OutputFormat:
+        """获取输出格式"""
+        return self.metadata.output_format
+        
+    @abstractmethod
+    def get_template(self) -> str:
+        """获取提示词模板"""
+        pass
+        
+    def get_system_prompt(self) -> Optional[str]:
+        """获取系统提示词"""
+        return self._system_prompt
+        
+    def get_examples(self) -> List[str]:
+        """获取示例"""
+        return self._examples.copy()
+        
+    def validate_parameters(self, parameters: Dict[str, Any]) -> bool:
+        """验证参数"""
+        required_params = set(self.metadata.parameters)
+        provided_params = set(parameters.keys())
+        
+        missing_params = required_params - provided_params
+        if missing_params:
+            from .exceptions import TemplateRenderError
+            raise TemplateRenderError(
+                template_name=self.name,
+                error_message="缺少必需参数",
+                missing_params=list(missing_params)
             )
-
-
-def get_batch_timestamps(batch_files, prev_batch_files=None):
-    """
-    解析一批文件的时间戳范围,支持毫秒级精度
-
-    Args:
-        batch_files: 当前批次的文件列表
-        prev_batch_files: 上一个批次的文件列表,用于处理单张图片的情况
-
-    Returns:
-        tuple: (first_timestamp, last_timestamp, timestamp_range)
-        时间戳格式: HH:MM:SS,mmm (时:分:秒,毫秒)
-        例如: 00:00:50,100 表示50秒100毫秒
-
-    示例文件名格式:
-        keyframe_001253_000050100.jpg
-        其中 000050100 表示 00:00:50,100 (50秒100毫秒)
-    """
-    if not batch_files:
-        logger.warning("Empty batch files")
-        return "00:00:00,000", "00:00:00,000", "00:00:00,000-00:00:00,000"
-
-    def get_frame_files():
-        """获取首帧和尾帧文件名"""
-        if len(batch_files) == 1 and prev_batch_files and prev_batch_files:
-            # 单张图片情况:使用上一批次最后一帧作为首帧
-            first = os.path.basename(prev_batch_files[-1])
-            last = os.path.basename(batch_files[0])
-            logger.debug(f"单张图片批次,使用上一批次最后一帧作为首帧: {first}")
-        else:
-            first = os.path.basename(batch_files[0])
-            last = os.path.basename(batch_files[-1])
-        return first, last
-
-    def extract_time(filename):
-        """从文件名提取时间信息"""
-        try:
-            # 提取类似 000050100 的时间戳部分
-            time_str = filename.split('_')[2].replace('.jpg', '')
-            if len(time_str) < 9:  # 处理旧格式
-                time_str = time_str.ljust(9, '0')
-            return time_str
-        except (IndexError, AttributeError) as e:
-            logger.warning(f"Invalid filename format: {filename}, error: {e}")
-            return "000000000"
-
-    def format_timestamp(time_str):
-        """
-        将时间字符串转换为 HH:MM:SS,mmm 格式
-
-        Args:
-            time_str: 9位数字字符串,格式为 HHMMSSMMM
-                     例如: 000010000 表示 00时00分10秒000毫秒
-                          000043039 表示 00时00分43秒039毫秒
-
-        Returns:
-            str: HH:MM:SS,mmm 格式的时间戳
-        """
-        try:
-            if len(time_str) < 9:
-                logger.warning(f"Invalid timestamp format: {time_str}")
-                return "00:00:00,000"
-
-            # 从时间戳中提取时、分、秒和毫秒
-            hours = int(time_str[0:2])  # 前2位作为小时
-            minutes = int(time_str[2:4])  # 第3-4位作为分钟
-            seconds = int(time_str[4:6])  # 第5-6位作为秒数
-            milliseconds = int(time_str[6:])  # 最后3位作为毫秒
-
-            return f"{hours:02d}:{minutes:02d}:{seconds:02d},{milliseconds:03d}"
-
-        except ValueError as e:
-            logger.warning(f"时间戳格式转换失败: {time_str}, error: {e}")
-            return "00:00:00,000"
-
-    # 获取首帧和尾帧文件名
-    first_frame, last_frame = get_frame_files()
-
-    # 从文件名中提取时间信息
-    first_time = extract_time(first_frame)
-    last_time = extract_time(last_frame)
-
-    # 转换为标准时间戳格式
-    first_timestamp = format_timestamp(first_time)
-    last_timestamp = format_timestamp(last_time)
-    timestamp_range = f"{first_timestamp}-{last_timestamp}"
-
-    # logger.debug(f"解析时间戳: {first_frame} -> {first_timestamp}, {last_frame} -> {last_timestamp}")
-    return first_timestamp, last_timestamp, timestamp_range
-
-
-def get_batch_files(keyframe_files, result, batch_size=5):
-    """
-    获取当前批次的图片文件
-    """
-    batch_start = result['batch_index'] * batch_size
-    batch_end = min(batch_start + batch_size, len(keyframe_files))
-    return keyframe_files[batch_start:batch_end]
-
-
-def chekc_video_config(video_params):
-    """
-    检查视频分析配置
-    """
-    headers = {
-        'accept': 'application/json',
-        'Content-Type': 'application/json'
-    }
-    session = requests.Session()
-    retry_strategy = Retry(
-        total=3,
-        backoff_factor=1,
-        status_forcelist=[500, 502, 503, 504]
-    )
-    adapter = HTTPAdapter(max_retries=retry_strategy)
-    session.mount("https://", adapter)
-    try:
-        session.post(
-            f"https://dev.narratoai.cn/api/v1/admin/external-api-config/services",
-            headers=headers,
-            json=video_params,
-            timeout=30,
-            verify=True
-        )
         return True
-    except Exception as e:
-        return False
+        
+    def render(self, parameters: Dict[str, Any] = None) -> str:
+        """渲染提示词"""
+        parameters = parameters or {}
+
+        # 验证参数
+        if self.metadata.parameters:
+            self.validate_parameters(parameters)
+
+        # 渲染模板 - 使用自定义的模板渲染器
+        template = self.get_template()
+        try:
+            from .template import get_renderer
+            renderer = get_renderer()
+            return renderer.render(template, parameters)
+        except Exception as e:
+            from .exceptions import TemplateRenderError
+            raise TemplateRenderError(
+                template_name=self.name,
+                error_message=f"模板渲染错误: {str(e)}",
+                missing_params=[]
+            )
+            
+    def to_dict(self) -> Dict[str, Any]:
+        """转换为字典"""
+        return {
+            "metadata": {
+                "name": self.metadata.name,
+                "category": self.metadata.category,
+                "version": self.metadata.version,
+                "description": self.metadata.description,
+                "model_type": self.metadata.model_type.value,
+                "output_format": self.metadata.output_format.value,
+                "author": self.metadata.author,
+                "created_at": self.metadata.created_at.isoformat(),
+                "updated_at": self.metadata.updated_at.isoformat(),
+                "tags": self.metadata.tags,
+                "parameters": self.metadata.parameters
+            },
+            "template": self.get_template(),
+            "system_prompt": self.get_system_prompt(),
+            "examples": self.get_examples()
+        }
+
+
+class TextPrompt(BasePrompt):
+    """文本模型专用提示词"""
+    
+    def __init__(self, metadata: PromptMetadata):
+        if metadata.model_type not in [ModelType.TEXT, ModelType.MULTIMODAL]:
+            raise ValueError(f"TextPrompt只支持TEXT或MULTIMODAL模型类型，当前: {metadata.model_type}")
+        super().__init__(metadata)
+
+
+class VisionPrompt(BasePrompt):
+    """视觉模型专用提示词"""
+    
+    def __init__(self, metadata: PromptMetadata):
+        if metadata.model_type not in [ModelType.VISION, ModelType.MULTIMODAL]:
+            raise ValueError(f"VisionPrompt只支持VISION或MULTIMODAL模型类型，当前: {metadata.model_type}")
+        super().__init__(metadata)
+
+
+class ParameterizedPrompt(BasePrompt):
+    """支持参数化的提示词"""
+    
+    def __init__(self, metadata: PromptMetadata, required_parameters: List[str] = None):
+        super().__init__(metadata)
+        if required_parameters:
+            self.metadata.parameters.extend(required_parameters)
+            # 去重
+            self.metadata.parameters = list(set(self.metadata.parameters))
